@@ -18,6 +18,7 @@ import TelegramBot from "node-telegram-bot-api";
 import { Telegraf, Markup } from "telegraf";
 
 import {
+  getInlineButtons,
   getPairAddress,
   getTradingStatus,
   isAdmin,
@@ -173,7 +174,7 @@ alchemy.ws.on(
   }
 );
 
-bot.onText(/\/add_sniperbot(.*)/, async (msg, match) => {
+bot.onText(/\/add_sniperbot/, async (msg, match) => {
   const chatId = msg.chat.id.toString();
   const userId = msg.from?.id?.toString() || "";
 
@@ -265,7 +266,7 @@ bot.onText(/\/show_sniperbots/, async (msg) => {
   }
 });
 
-bot.onText(/\/delete_sniperbot(.*)/, async (msg, match) => {
+bot.onText(/\/delete_sniperbot/, async (msg, match) => {
   const chatId = msg.chat.id.toString();
   const userId = msg.from?.id?.toString() || "";
 
@@ -398,7 +399,7 @@ bot.onText(/\/show_all/, async (msg, match) => {
   for (const dat of data) {
     const newToken = (dat as any).newToken as NewTokens;
     const msg = await getApprovalMsgFromTokenAddress(newToken.tokenAddress);
-    await bot.sendMessage(chatId, msg, { parse_mode: "HTML" });
+    await scopeSendMsg(bot, chatId, msg);
   }
 });
 
@@ -447,7 +448,7 @@ bot.onText(/\/show_range/, async (msg) => {
     for (const data of results) {
       const newToken = (data as any).newToken as NewTokens;
       const msg = await getApprovalMsgFromTokenAddress(newToken.tokenAddress);
-      await bot.sendMessage(chatId, msg, { parse_mode: "HTML" });
+      await scopeSendMsg(bot, chatId, msg);
     }
   };
 
@@ -539,7 +540,11 @@ bot.onText(/\/start/, async (msg) => {
 
   await setCommandsForUser(bot, userId);
   const welcomeMessage = getWelcomeMsg(userId);
-  sendMessage(bot, chatId, welcomeMessage, { parse_mode: "HTML" });
+  const buttons = getInlineButtons();
+  bot.sendMessage(chatId, welcomeMessage, {
+    parse_mode: "Markdown",
+    reply_markup: buttons.reply_markup,
+  });
 });
 
 const main = async () => {

@@ -85,4 +85,12 @@ export const messages = {
     InputSniperId: "✏️ Please enter the sniper bot ID:",
     InvalidSniperId: "❌ Invalid sniper ID.",
   },
+  CAEye: {
+    InputAddress: "✏️ Please input token address.",
+    UnableRetrieve:
+      "❌ *Error:* Unable to retrieve token information. Please make sure the contract address is correct.",
+    ErrorOccuring:
+      "❌ *Error:* An error occurred while fetching token information. Please try again later.",
+    NoLPData: "❌ No LP data available",
+  },
 };

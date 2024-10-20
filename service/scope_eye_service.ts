@@ -11,10 +11,7 @@ import {
   SniperBots,
 } from "../model/second_eye_model";
 import TelegramBot from "node-telegram-bot-api";
-import { Markup } from "telegraf";
-import { urls } from "../constant/constant";
-import { isAdmin } from "../utils/utils";
-
+import { getInlineButtons, isAdmin } from "../utils/utils";
 
 export const getApprovalMsgFromTokenAddress = async (tokenAddress: string) => {
   const data = await SniperApprovalActivities.findAll({
@@ -63,67 +60,66 @@ export const getApprovalMsgFromTokenAddress = async (tokenAddress: string) => {
     0
   );
 
-  let msg = `<b>🚨 ${totalCount} preapprovals for $${
+  let msg = `**🚨 ${totalCount} preapprovals for $${
     tokenInfo?.tokenName || "unknowns"
-  }! 🚨</b>\n`;
+  }! 🚨**\n`;
 
   for (let index = 0; index < bots.length; index++) {
     const botItem = bots[index];
     const count = botCount[botItem.name] || 0;
-    msg += `${index === bots.length - 1 ? "└" : "├"} 🤖 <b>${
+    msg += `${index === bots.length - 1 ? "└" : "├"} 🤖 **${
       botItem.name
-    }</b>: ${count}\n`;
+    }**: ${count}\n`;
   }
 
-  msg += `\n<b>💲Token Name:</b> ${tokenInfo?.tokenName || "unknowns"}\n`;
-  // msg += `├ Full CA Info: <a href="https://t.me/eye">Click Here</a>\n`;
-  msg += `├ <b>Token Address:</b> <a href="https://etherscan.io/address/${
-    tokenInfo?.tokenAddress || "unknown"
-  }">${tokenInfo?.tokenAddress || "unknown"}</a>\n`;
-  msg += `└ <b>Deployer Wallet:</b> <a href="https://etherscan.io/address/${
+  msg += `\n**💲Token Name:** ${tokenInfo?.tokenName || "unknowns"}\n`;
+  msg += `├ **Token Address:** \`${tokenInfo?.tokenAddress || "unknown"}\`\n`;
+  msg += `└ **Deployer Wallet:** \`${
     tokenInfo?.deployerAddress || "unknown"
-  }">${tokenInfo?.deployerAddress || "unknown"}</a>\n`;
+  }\`\n`;
 
-  msg += `\n<b>📈 Charts:</b>\n`;
-  msg += `└─ <a href="https://www.dexview.com/eth/${
+  msg += `\n**📈 Charts:**\n`;
+  msg += `└─ [DEXView](https://www.dexview.com/eth/${
     tokenInfo?.tokenAddress || "unknown"
-  }">DEXView</a> | <a href="https://photon.tinyastro.io/en/lp/${
+  }) | [Photon](https://photon.tinyastro.io/en/lp/${
     tokenInfo?.tokenAddress || "unknown"
-  }">Photon</a> | <a href="https://www.dextools.io/app/ether/pair-explorer/${
+  }) | [DEXTools](https://www.dextools.io/app/ether/pair-explorer/${
     tokenInfo?.tokenAddress || "unknown"
-  }">DEXTools</a> | <a href="https://dexscreener.com/ethereum/${
+  }) | [DEXScreen](https://dexscreener.com/ethereum/${
     tokenInfo?.tokenAddress || "unknown"
-  }">DEXScreen</a>`;
+  })`;
 
-  msg += `\n\n👀 <b>#TradingEnabled</b> 👀`;
+  msg += `\n\n👀 **#TradingEnabled** 👀`;
   return msg;
 };
 
 export const getWelcomeMsg = (userId: string) => {
   let msg =
-    "🌟 Welcome to the **Sniper Bot**! 🌟\n\nHere are the commands you can use:\n";
-  isAdmin(userId) &&
-    (msg += `
-Admin Commands:
+    `🌟 **Welcome to the Sniper Bot!** 🌟\n\n` +
+    `We’re glad to have you on board. Here’s a quick overview of the commands available to help you get the most out of the bot:\n`;
 
-📥 /add_sniperbot - Add a new sniper bot.
+  // Check if the user is an admin and add admin-specific commands
+  if (isAdmin(userId)) {
+    msg += `
+**Admin Commands:**
 
-📜 /show_sniperbots - Show all added sniper bots.
+- 📥 /add\\_sniperbot – Add a new sniper bot to the system.
+- 📜 /show\\_sniperbots – Display all currently added sniper bots.
+- 🗑️ /delete\\_sniperbot – Remove a sniper bot by providing its ID.\n\n`;
+  }
 
-🗑️ /delete_sniperbot - Delete a sniper bot by its ID.\n\n`);
+  // User-specific commands (always included)
+  msg += `**User Commands:**
 
-  msg += `User Commands:
+- 🔍 /show\\_ca – Check sniper bot approvals for a specific token address.
+- 📊 /show\\_all – View the top 10 sniping activities from the last hour.
+- 📊 /show\\_range – Display the most recent 10 activities within a specified range or the last 24 hours.
 
-🔍 /show_ca - Check approvals for a specific token address.
-
-📊 /show_all - Displays the top 10 sniping activities in the last hour.
-
-📊 /show_range - Show activity the lastest 10 activities in a specific range or specific value last 24 hours.
-
-For any assistance, feel free to reach out! 🤖`;
+Need help? Feel free to reach out anytime! 🤖`;
 
   return msg;
 };
+
 
 export const postForCheckCA = async (bot: TelegramBot) => {
   const currentTime = Math.floor(new Date().getTime() / 1000);
@@ -148,26 +144,12 @@ export const scopeSendMsg = async (
   chatId: string,
   msg: string
 ) => {
-  const buttons = getScopeButton();
+  const buttons = getInlineButtons();
 
   await bot.sendMessage(chatId, msg, {
-    parse_mode: "HTML",
+    parse_mode: "Markdown",
     reply_markup: buttons.reply_markup,
   });
-};
-
-export const getScopeButton = () => {
-  return Markup.inlineKeyboard([
-    [Markup.button.callback("CA EYE Bot", urls.caEyeBot)],
-    [
-      Markup.button.url("🍌 Snipe Banana Bot", urls.bananaGunBot),
-      Markup.button.url("🎯 Snipe Maestro Bot", urls.maestroBot),
-    ],
-    [
-      Markup.button.url("🛡 TTF Scan", urls.ttfBot),
-      Markup.button.url("🛡 Otto Scan", urls.ottoBot),
-    ],
-  ]);
 };
 
 export const setCommandsForUser = async (bot: TelegramBot, userId: string) => {

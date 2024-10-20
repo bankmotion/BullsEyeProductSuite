@@ -23,7 +23,7 @@ const apiId = Number(process.env.API_ID);
 const apiHash = process.env.API_HASH as string;
 const phoneNumber = process.env.PHONE_NUMBER as string;
 const sessionString =
-  "1BAAOMTQ5LjE1NC4xNjcuOTEAUMX0URugzLVMFr/BuEEYBYhJrj5uf0DOQeBCdqGE3dNXEtM+qElYf9POqE8ETNWKV663BKsSxdH6eZuM16xbx48NLXYUXwEEZPswmR2TtJOHVw04+bfCh+EkNRgdw2enk+3MuWjF/78MU08kMWmPoLPjW5prRoAJS4g44ZwYBY5wuhR2rjTQ2z+hRzTQeLyRAMzwt/PjSijKG4OfXh7eG7gCLdym8Z1arirtY/5SeEGFqhhsaAkCKa/XXnnX3uJgq47bguAD47quM1coENI7mmyOQ3Yc+cArU+9hIkpkL2TX9TXX1bWqKqA9Ws+I7E4w3mrIjVaj5QnV6VZFh7GYhbY=";
+  "1BAAOMTQ5LjE1NC4xNjcuOTEAUIwIZ4RsmkBHXbTxkXAloO5y4hUTNqh5outmduFnBWBlYlIv98Dx7zh1iEXsiWZWUX7m90QdlMy2nzHS3hIQUb6cN2tSHMSHyEioNGPaDhxVA3CaZiIDxLv186cs6+GG0PCAS4w3R6KOHoLlCcg5hw5jv/a9JDLoqjV5ZejZ1dmx+SnKDCnIpy7kw2np+kBOw6pypIWGbm02SnY0DnTQARZSAHblOR1XAbMQjT9tWrJ6lHp0CyHXm7kdMMJVFe86BC7Q30UOPzFrf3XvdWr7sYnDDS3jYFHEF4xItp67uAN/4qLTnhnD+5pJEjSoANemfNFWW9GbtH/C4ORYkrTaX1c=";
 let scrapingStatus = true;
 const postingGroup = "first_eye_ai";
 
