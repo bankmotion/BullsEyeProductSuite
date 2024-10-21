@@ -88,18 +88,18 @@ export const formatNumber = (num: number | string): string => {
   const decimalPlaces = 3;
   const nums = Number(num);
 
-  if (nums < 0.00000001) {
-    return '0';
+  if (Math.abs(nums) < 0.00000001) {
+    return "0";
   }
-  if (nums < 0.001) {
+  if (Math.abs(nums) < 0.001) {
     return nums.toExponential(5).replace(/\.?0+e/, "e");
   }
 
-  if (nums >= 1e9) {
+  if (Math.abs(nums) >= 1e9) {
     return (nums / 1e9).toFixed(decimalPlaces).replace(/\.?0+$/, "") + "B"; // Billions
-  } else if (nums >= 1e6) {
+  } else if (Math.abs(nums) >= 1e6) {
     return (nums / 1e6).toFixed(decimalPlaces).replace(/\.?0+$/, "") + "M"; // Millions
-  } else if (nums >= 1e3) {
+  } else if (Math.abs(nums) >= 1e3) {
     return (nums / 1e3).toFixed(decimalPlaces).replace(/\.?0+$/, "") + "K"; // Thousands
   }
 

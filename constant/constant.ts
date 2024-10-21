@@ -8,7 +8,7 @@ export const urls = {
   firstEyeBot: "t.me/first_eye_ai",
   firstEyeAdminBot: "https://t.me/test_first_eye_bot",
   caEyeBot: "https://t.me/ca_eye_ai_bot",
-  scopeBot: "https://t.me/test_scope_eye_bot",
+  scopeBot: "https://t.me/scope_eye_ai_bot",
   bananaGunBot: "https://t.me/BananaGunSniper_bot?start=ref_bullseye",
   maestroBot: "https://t.me/maestro?start=r-bullseyeai",
   ttfBot: "https://t.me/ttfbotbot",

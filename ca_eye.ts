@@ -14,7 +14,7 @@ import {
   getPoolPriceFromDexTools,
   getPoolsDataFromDexTools,
   getSecurityDataFromDextools,
-  getSocialsFromMoralis,
+  getSocialsFromDextools,
   getTokenInfoFromContract,
   getTokenInfoMsg,
   getTokenSecurityMsg,
@@ -66,7 +66,7 @@ bot.onText(/\/token_info/, async (msg) => {
   await askForAddress(chatId, bot, async (address) => {
     try {
       const tokenInfo = await getTokenInfoFromContract(address);
-      const links = await getSocialsFromMoralis(address);
+      const links = await getSocialsFromDextools(address);
       console.log({ tokenInfo, links });
       if (tokenInfo) {
         const { tokenName, tokenSymbol, totalSupply } = tokenInfo;
@@ -244,8 +244,127 @@ bot.onText(/\/token_stats/, async (msg) => {
 
 bot.onText(/\/full_report/, async (msg) => {
   const chatId = msg.chat.id.toString() || "";
+  let renounced = false,
+    verified = false;
 
-  await askForAddress(chatId, bot, async (address) => {});
+  await askForAddress(chatId, bot, async (address) => {
+    try {
+      const tokenInfo = await getTokenInfoFromContract(address);
+      const links = await getSocialsFromDextools(address);
+      if (tokenInfo) {
+        const { tokenName, tokenSymbol, totalSupply } = tokenInfo;
+
+        const tokenInfoMsg =
+          getBasicTokenMsg(address, tokenName, tokenSymbol) +
+          getTokenInfoMsg(address, totalSupply, links);
+
+        // token security
+        if (tokenInfo.owner === Addresses.Empty) renounced = true;
+
+        const contractDataFromEtherScan = await getContractCodeFromEtherScan(
+          address
+        );
+        if (contractDataFromEtherScan && contractDataFromEtherScan.sourceCode)
+          verified = true;
+
+        const deployerData = await getDeployerInfoFromEtherScan(address);
+
+        const lpData = await getLPDataFromDexScreener(address);
+        if (lpData) {
+          const lpAddress = lpData.pairAddress;
+          const lpBalanceData = await getLiquidityBalance(address, lpAddress);
+          let contractBalance = "Unknown",
+            lpBalance: string = "Unknown",
+            percentContract: string | number = "Unknown",
+            percentLp: string | number = "Unknown";
+          if (lpBalanceData) {
+            contractBalance = lpBalanceData.contractBalance;
+            lpBalance = lpBalanceData.lpBalance;
+            percentContract = lpBalanceData.percentContract;
+            percentLp = lpBalanceData.percentLp;
+          }
+
+          let sellTax = {
+            min: 0,
+            max: 0,
+            status: "",
+          };
+          let buyTax = {
+            min: 0,
+            max: 0,
+            status: "",
+          };
+          let lockedAmount = 0;
+          const securityData = await getSecurityDataFromDextools(
+            address,
+            lpAddress
+          );
+          if (securityData) {
+            sellTax = securityData.sellTax;
+            buyTax = securityData.buyTax;
+            console.log(securityData.lockData);
+            lockedAmount = securityData.lockData.amountLocked;
+          }
+
+          const maxData = await getMaxTxWallet(address);
+
+          const tokenSecurityMsg = getTokenSecurityMsg(
+            tokenInfo.tokenSymbol,
+            renounced,
+            verified,
+            deployerData?.deployer || "Unknown",
+            deployerData?.balance || "Unknown",
+            deployerData?.ethBalance || "Unknown",
+            deployerData?.txCount?.toString() || "Unknown",
+            contractBalance,
+            lpBalance,
+            percentContract as string,
+            percentLp as string,
+            sellTax,
+            buyTax,
+            lockedAmount,
+            maxData.maxTx,
+            maxData.maxWallet,
+            maxData.totalSupply
+          );
+
+          // token stats
+          const priceData = await getPoolPriceFromDexTools(lpAddress);
+          const poolsData = await getPoolsDataFromDexTools(address);
+          const mainPoolData = await getMainPoolLPFromDexScreener(lpAddress);
+
+          const tokenStatsMsg = getTokenStats(
+            priceData,
+            poolsData,
+            mainPoolData
+          );
+
+          const buttons = getInlineButtons();
+          bot.sendMessage(
+            chatId,
+            tokenInfoMsg + tokenSecurityMsg + tokenStatsMsg,
+            {
+              parse_mode: "Markdown",
+              reply_markup: buttons.reply_markup,
+            }
+          );
+        } else {
+          bot.sendMessage(chatId, messages.CAEye.NoLPData, {
+            parse_mode: "Markdown",
+          });
+        }
+      } else {
+        bot.sendMessage(chatId, messages.CAEye.UnableRetrieve, {
+          parse_mode: "Markdown",
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching token information:", err);
+      bot.sendMessage(chatId, messages.CAEye.ErrorOccuring, {
+        parse_mode: "Markdown",
+      });
+    }
+  });
 });
 
 bot.onText(/\/start/, async (msg) => {

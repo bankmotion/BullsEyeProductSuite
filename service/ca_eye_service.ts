@@ -45,15 +45,23 @@ export const getTokenInfoFromContract = async (address: string) => {
   }
 };
 
-export const getSocialsFromMoralis = async (address: string) => {
+export const getSocialsFromDextools = async (address: string) => {
   try {
-    const response = await Moralis.EvmApi.token.getTokenMetadata({
-      chain: "0x1",
-      addresses: [address],
-    });
-    return (response.raw as any)?.links;
+    const url = `https://public-api.dextools.io/trial/v2/token/ether/${address}`;
+    const res = await axios
+      .get(url, { headers: { "x-api-key": dextoolsApiKey } })
+      .catch((err) =>
+        console.log(`Error getSecurityDataFromDextools(): ${err}`)
+      );
+
+    let social;
+    if (res && (res as any).data?.statusCode === 200) {
+      social = res?.data?.data?.socialInfo;
+    }
+    console.log(res?.data);
+    return social;
   } catch (err) {
-    console.log(`Error getSocialsFromMoralis(): ${err}`);
+    console.log(`Error getSocialsFromDextools(): ${err}`);
   }
 };
 
@@ -328,6 +336,8 @@ export const getTokenInfoMsg = (
   address: string,
   tokenSupply: number,
   links: {
+    email?: string;
+    bitbucket?: string;
     discord?: string;
     twitter?: string;
     website?: string;
@@ -350,12 +360,16 @@ export const getTokenInfoMsg = (
 
   const socialMsg = links
     ? `**Socials**:\n` +
-      (links.discord ? `├ 💬 **Discord**: [Link](${links.discord})\n` : "") +
+      (links.email ? `├ ✉️ **Email**: [Link](${links.email})\n` : "") +
+      (links.bitbucket
+        ? `├ 🏗️ **Bitbucket**: [Link](${links.bitbucket})\n`
+        : "") +
+      (links.discord ? `├ 🛜 **Discord**: [Link](${links.discord})\n` : "") +
       (links.twitter ? `├ 🐦 **Twitter**: [Link](${links.twitter})\n` : "") +
-      (links.website ? `├ 🌐 **Website**: [Link](${links.website})\n` : "") +
-      (links.github ? `├ 🛠 **GitHub**: [Link](${links.github})\n` : "") +
+      (links.website ? `├ 🌍 **Website**: [Link](${links.website})\n` : "") +
+      (links.github ? `├ 🧑‍💻 **GitHub**: [Link](${links.github})\n` : "") +
       (links.medium ? `├ 📰 **Medium**: [Link](${links.medium})\n` : "") +
-      (links.telegram ? `├ 📢 **Telegram**: [Link](${links.telegram})\n` : "") +
+      (links.telegram ? `├ 📣 **Telegram**: [Link](${links.telegram})\n` : "") +
       (links.reddit ? `├ 👽 **Reddit**: [Link](${links.reddit})\n` : "") +
       (links.facebook ? `├ 📘 **Facebook**: [Link](${links.facebook})\n` : "") +
       (links.instagram
@@ -366,7 +380,7 @@ export const getTokenInfoMsg = (
       (links.youtube ? `└ 📺 **YouTube**: [Link](${links.youtube})\n` : "")
     : "No social links available.";
 
-  return msg + socialMsg.trim();
+  return msg + socialMsg.trim() + "\n\n";
 };
 
 export const getTokenSecurityMsg = (
@@ -428,7 +442,7 @@ export const getTokenSecurityMsg = (
     }%\` | Status: \`${buyTax?.status ? buyTax.status : "Unknown"}\`\n` +
     `  └ 📉 *Sell*: Min: \`${sellTax?.min || 0}%\` | Max: \`${
       sellTax?.max || 0
-    }%\` | Status: \`${sellTax?.status ? sellTax.status : "Unknown"}\`\n`;
+    }%\` | Status: \`${sellTax?.status ? sellTax.status : "Unknown"}\`\n\n`;
 
   return msg;
 };
